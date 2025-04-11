@@ -48,7 +48,7 @@ export default function Home() {
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <ScrollLink to="about" smooth={true} duration={500}>
                 <Button
-                  className="text-lg px-6 py-3 rounded-xl sm:text-xl sm:px-8 sm:py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                  className="text-lg px-6 py-3 sm:text-xl sm:px-8 sm:py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
                 >
                   About Me
                 </Button>
@@ -56,7 +56,7 @@ export default function Home() {
               <ScrollLink to="qa" smooth={true} duration={500}>
                 <Button
                   variant="outline"
-                  className="text-lg px-6 py-3 rounded-xl sm:text-xl sm:px-8 sm:py-4 bg-transparent border-2 border-blue-500 text-white hover:bg-blue-500 hover:text-white transition-all duration-300"
+                  className="text-lg px-6 py-3  sm:text-xl sm:px-8 sm:py-4 bg-transparent border-2 border-blue-500 text-white hover:bg-blue-500 hover:text-white transition-all duration-300"
                 >
                   Q&A with AI
                 </Button>
