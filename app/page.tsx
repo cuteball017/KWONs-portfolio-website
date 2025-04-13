@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Link as ScrollLink } from "react-scroll"
 import Navbar from "@/components/navbar"
+import { ProjectCard } from "@/components/project-card"
 import { Button } from "@/components/ui/button"
 import AboutMe from "@/components/about-me"
 import Loading from "@/components/loading"
@@ -91,19 +92,25 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               <ProjectCard
-                title="Serverless Web3 Blog"
+                title="KWON's Portfolio Web Blog"
                 description="Decentralized blogging platform with permanent storage on Arweave and crypto micropayments."
                 tags={["Next.js", "Firebase", "Arweave", "Web3"]}
+                githubUrl="https://github.com/username/serverless-web3-blog"
+                vercelUrl="https://kwons-portfolio-website.vercel.app/"
               />
               <ProjectCard
-                title="Cross-Chain Bridge"
+                title="HWON's Ginger Sales Site"
                 description="Secure bridge for asset transfers between different blockchain networks."
                 tags={["Cross-Chain", "Interoperability", "DeFi"]}
+                githubUrl="https://github.com/username/serverless-web3-blog"
+                vercelUrl="https://hwon-website.vercel.app/"
               />
               <ProjectCard
-                title="Decentralized Identity Solution"
+                title="Project-Atta"
                 description="Self-sovereign identity solution using blockchain technology."
                 tags={["DID", "Identity", "Blockchain"]}
+                githubUrl="https://github.com/username/serverless-web3-blog"
+                vercelUrl="https://project-atta.vercel.app/" 
               />
               <ProjectCard
                 title="Solidity Code Generator"
@@ -160,27 +167,28 @@ export default function Home() {
   )
 }
 
-type ProjectCardProps = {
-  title: string;
-  description: string;
-  tags: string[];
-};
+// type ProjectCardProps = {
+//   title: string;
+//   description: string;
+//   tags: string[]; githubUrl?: string
+//   vercelUrl?: string
+// };
 
-function ProjectCard({ title, description, tags }: ProjectCardProps) {
-  return (
-    <div className="p-4 md:p-6 rounded-lg bg-gray-900/50 backdrop-blur-sm border border-gray-800 hover:border-blue-500 transition-all duration-300">
-      <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-white text-center md:text-left">{title}</h3>
-      <p className="text-sm md:text-base text-gray-400 mb-3 md:mb-4 text-center md:text-left">{description}</p>
-      <div className="flex flex-wrap justify-center md:justify-start gap-2">
-        {tags.map((tag, index) => (
-          <span
-            key={index}
-            className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function ProjectCard2({ title, description, tags }: ProjectCardProps) {
+//   return (
+//     <div className="p-4 md:p-6 rounded-lg bg-gray-900/50 backdrop-blur-sm border border-gray-800 hover:border-blue-500 transition-all duration-300">
+//       <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-white text-center md:text-left">{title}</h3>
+//       <p className="text-sm md:text-base text-gray-400 mb-3 md:mb-4 text-center md:text-left">{description}</p>
+//       <div className="flex flex-wrap justify-center md:justify-start gap-2">
+//         {tags.map((tag, index) => (
+//           <span
+//             key={index}
+//             className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300"
+//           >
+//             {tag}
+//           </span>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }

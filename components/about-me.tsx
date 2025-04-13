@@ -45,7 +45,7 @@ export default function AboutMe() {
             <div className="md:w-1/3 w-full flex justify-center">
               <div className="relative w-48 h-48 md:w-64 md:h-64">
                 <Image
-                  src="/placeholder.svg?height=256&width=256"
+                  src="https://storage.cloud.google.com/pfo-img/portfolio_img.jpg"
                   alt="KWON WOOSUB"
                   width={256}
                   height={256}
@@ -124,7 +124,12 @@ export default function AboutMe() {
   )
 }
 
-function SkillBar({ name, proficiency }) {
+type SkillBarProps = {
+  name: string;
+  proficiency: number;
+};
+
+function SkillBar({ name, proficiency }: SkillBarProps) {
   return (
     <div className="mb-3">
       <div className="flex justify-between mb-1">
