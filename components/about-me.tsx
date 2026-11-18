@@ -57,7 +57,10 @@ export default function AboutMe() {
           initial="hidden"
           whileInView="show"
           viewport={inView}
-          className="flex w-full justify-center md:w-auto md:shrink-0"
+          // Side by side, the portrait centres on the list of rows rather than on the whole profile:
+          // md:pt-28 matches the name block above the list (name 2.5rem + 0.5rem gap + title 1.5rem
+          // + the list's 2.5rem top margin = 7rem), so the extra space above it balances that block.
+          className="flex w-full justify-center md:w-auto md:shrink-0 md:pt-28"
         >
           {/* The portrait floats, with a soft blue halo behind it */}
           <div className="relative h-48 w-48 motion-safe:animate-float md:h-60 md:w-60 lg:h-80 lg:w-80 xl:h-[23rem] xl:w-[23rem]">
