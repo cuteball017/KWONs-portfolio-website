@@ -22,11 +22,9 @@ const profileIcons: Record<ProfileTopic, LucideIcon> = {
 
 const skillsData: Record<keyof Copy["about"]["skillGroups"], { name: string; proficiency: number }[]> = {
   languages: [
-    { name: "TypeScript", proficiency: 80 },
-    { name: "JavaScript", proficiency: 72 },
-    { name: "python", proficiency: 68 },
-    { name: "Java", proficiency: 40 },
-    { name: "Dart", proficiency: 20 },
+    { name: "Python", proficiency: 75 },
+    { name: "TypeScript", proficiency: 70 },
+    { name: "JavaScript", proficiency: 65 },
   ],
   frameworks: [
     { name: "React", proficiency: 75 },

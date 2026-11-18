@@ -88,11 +88,6 @@ const en = {
           "This website. A starfield drawn on canvas, a liquid glass UI, an English/Japanese toggle and an AI chat that answers questions about me.",
         tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Claude API"],
       },
-      ginger: {
-        title: "HWON's Ginger Sales Site",
-        description: "Secure bridge for asset transfers between different blockchain networks.",
-        tags: ["Cross-Chain", "Interoperability", "DeFi"],
-      },
     },
   },
   qa: {
@@ -183,14 +178,9 @@ const ja: Copy = {
       blog: {
         title: "KWON's Portfolio Web Blog",
         description:
-          // U+2060 (word joiner) keeps 私について on one line.
-          "このサイトです。Canvasで描いた星空、リキッドグラス風のUI、英語・日本語の切り替え、私に⁠ついて答えるAIチャットを備えています。",
+          // U+2060 (word joiner) keeps 星空, 切り替え and 私について from being split across lines.
+          "このサイトです。Canvasで描いた星⁠空、リキッドグラス風のUI、英語・日本語の切り⁠替え、私に⁠ついて答えるAIチャットを備えています。",
         tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Claude API"],
-      },
-      ginger: {
-        title: "HWON's Ginger Sales Site",
-        description: "異なるブロックチェーン間で資産を安全に移動するためのブリッジ。",
-        tags: ["クロスチェーン", "相互運用性", "DeFi"],
       },
     },
   },

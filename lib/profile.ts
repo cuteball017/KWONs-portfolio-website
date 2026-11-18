@@ -23,7 +23,7 @@ Certifications:
 - JLPT N1 (Japanese-Language Proficiency Test, highest level), passed
 
 Skills (his own ratings on this site, out of 100%):
-- Programming languages: TypeScript 80%, JavaScript 72%, Python 68%, Java 40%, Dart 20%
+- Programming languages: Python 75%, TypeScript 70%, JavaScript 65%
 - Frameworks and libraries: React 75%, Next.js 70%, Node.js 65%
 - Tools: Git 75%, Docker 15%
 
@@ -31,7 +31,6 @@ Projects (from the "What I've Built" section):
 - Atta: a lost-and-found management web app for facilities in Japan, installable as an app (PWA). Staff photograph a found item and Gemini AI fills in its name, brand, color and features; they find items with Japanese full-text search or by chatting with an AI search assistant; returns are recorded with the owner's e-signature (consent text in Japanese, Korean, Chinese and English); and the submission form for found items is generated as a PDF automatically. Items can also be bulk-imported from CSV or Excel. Built with Next.js, Supabase (PGroonga for Japanese search) and Cloudflare R2 for photo storage. Offered to businesses by okaery as "Atta for business": https://okaery.co.jp/atta
 - Copiru (his role: in charge of Korean): an AI proofreading app for Mac and Windows. It checks for typos and inconsistent wording in 10 languages (including Japanese, English, Chinese and Korean), shows suggestions in a pop-up inside the apps you are writing in (email, chat, editors), can proofread long documents and PDFs, and works offline, so the text is never sent to a server. Free version available. Website: https://copiru.com/ja
 - KWON's Portfolio Web Blog: this portfolio website itself. A starfield drawn on canvas, liquid-glass UI, an English/Japanese toggle, and this AI chat. Built with Next.js, TypeScript, Tailwind CSS, Framer Motion and the Claude API. Live: https://kwons-portfolio-website.vercel.app/
-- HWON's Ginger Sales Site: live at https://hwon-website.vercel.app/ (no description yet)
 
 Links:
 - GitHub: https://github.com/cuteball017

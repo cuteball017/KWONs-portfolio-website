@@ -25,7 +25,6 @@ const projects: { id: keyof Copy["work"]["projects"]; githubUrl?: string; vercel
   { id: "atta", vercelUrl: "https://okaery.co.jp/atta#problem-1" },
   { id: "copiru", vercelUrl: "https://copiru.com/ja" },
   { id: "blog", githubUrl: GITHUB_URL, vercelUrl: "https://kwons-portfolio-website.vercel.app/" },
-  { id: "ginger", githubUrl: GITHUB_URL, vercelUrl: "https://hwon-website.vercel.app/" },
 ]
 
 const travelTo = (id: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -125,8 +124,9 @@ export default function Home() {
                     initial="hidden"
                     whileInView="show"
                     viewport={inView}
-                    // Two columns at most: four projects make a balanced 2×2, with no card left alone
-                    className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
+                    // Three projects side by side on wide screens. Narrower screens stack them (two
+                    // columns would leave one card alone), kept to a readable width.
+                    className="mx-auto grid max-w-2xl grid-cols-1 gap-6 md:gap-8 lg:max-w-none lg:grid-cols-3"
                   >
                     {projects.map(({ id, ...links }) => (
                       <ProjectCard key={id} {...t.work.projects[id]} {...links} />
