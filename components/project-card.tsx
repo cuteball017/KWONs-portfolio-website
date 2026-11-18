@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Code, ExternalLink } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { useCopy } from "@/lib/i18n"
+import { EASE, riseIn } from "@/lib/motion"
 
 interface ProjectCardProps {
   title: string
@@ -14,25 +14,27 @@ interface ProjectCardProps {
   vercelUrl?: string
 }
 
-export function ProjectCard({ title, description, tags, githubUrl = "#", vercelUrl = "#" }: ProjectCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
+const actionButton = "glass-control h-9 px-4 text-sm"
 
+// Hover (or keyboard focus) lets the text fall out of focus while the links come forward.
+// The reveal itself lives in globals.css (.project-card) so touch screens get a plain row of links instead.
+// Each button appears only when its URL is given.
+export function ProjectCard({ title, description, tags, githubUrl, vercelUrl }: ProjectCardProps) {
+  const t = useCopy()
   return (
-    <div
-      className="relative h-full rounded-lg border bg-card p-6 text-card-foreground shadow transition-all duration-300 group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
+    <motion.div
+      variants={riseIn}
+      whileHover={{ y: -4, transition: { duration: 0.5, ease: EASE } }}
+      className="project-card glass-panel h-full p-6"
     >
-      <div className={cn("transition-all duration-300", isHovered ? "blur-sm" : "")}>
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="mt-2 text-muted-foreground">{description}</p>
+      <div className="project-card__body">
+        <h3 className="font-display text-xl font-semibold text-white">{title}</h3>
+        <p className="mt-2 leading-relaxed text-slate-400">{description}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+              className="inline-flex items-center rounded-full bg-blue-300/[0.08] px-2.5 py-0.5 text-xs font-medium text-blue-100/80 shadow-[inset_0_1px_0.5px_rgba(255,255,255,0.16),inset_0_0_0_1px_rgba(147,197,253,0.1)]"
             >
               {tag}
             </span>
@@ -40,32 +42,22 @@ export function ProjectCard({ title, description, tags, githubUrl = "#", vercelU
         </div>
       </div>
 
-      {isHovered && (
-        <div className="absolute inset-0 flex items-center justify-center gap-4 p-6">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2 bg-background/80 backdrop-blur-sm"
-            asChild
-          >
-            <Link href={githubUrl}>
+      {(githubUrl || vercelUrl) && (
+        <div className="project-card__actions">
+          {githubUrl && (
+            <Link href={githubUrl} className={actionButton}>
               <Code className="h-4 w-4" />
-              <span>Code</span>
+              <span>{t.work.code}</span>
             </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2 bg-background/80 backdrop-blur-sm"
-            asChild
-          >
-            <Link href={vercelUrl}>
+          )}
+          {vercelUrl && (
+            <Link href={vercelUrl} className={actionButton}>
               <ExternalLink className="h-4 w-4" />
-              <span>View Service</span>
+              <span>{t.work.viewService}</span>
             </Link>
-          </Button>
+          )}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

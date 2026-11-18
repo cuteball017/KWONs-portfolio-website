@@ -3,25 +3,68 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, Github } from "lucide-react"
+import { scroller } from "react-scroll"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useCopy } from "@/lib/i18n"
+import { EASE, focusIn, stagger } from "@/lib/motion"
+import { cn } from "@/lib/utils"
+
+// Section ids, in page order. Their labels come from lib/copy.ts (nav).
+const sections = ["home", "about", "work", "qa"] as const
+
+const iconVariants = {
+  initial: { scale: 1, rotate: 0 },
+  hover: { scale: 1.15, rotate: 5 },
+}
+
+// Hover styles only where there is a real hover; on touch they would stick after a tap.
+const iconButton =
+  "flex h-10 w-10 items-center justify-center rounded-full text-slate-300 transition-colors duration-500 active:bg-white/10 [@media(hover:hover)]:hover:bg-white/10 [@media(hover:hover)]:hover:text-white"
 
 export default function Navbar() {
+  const t = useCopy()
   const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const [active, setActive] = useState<string>(sections[0])
+  const [lens, setLens] = useState(false)
 
+  // The bar's rim refracts the page through an SVG filter used as backdrop-filter. Only Chromium
+  // renders that today (navigator.userAgentData is its tell); everyone else gets plain frosted glass.
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
+    setLens("userAgentData" in navigator)
+  }, [])
+
+  // Follow the section in view.
+  useEffect(() => {
+    let frame = 0
+
+    const update = () => {
+      frame = 0
+      // While the mobile menu pins <body>, scrollY reads 0 — keep the last real state.
+      if (document.body.style.position === "fixed") return
+
+      const probe = window.innerHeight * 0.4
+      let current: string = sections[0]
+      for (const id of sections) {
+        const section = document.getElementById(id)
+        if (section && section.getBoundingClientRect().top <= probe) current = id
       }
+      setActive(current)
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    const handleScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
+    update()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    window.addEventListener("resize", handleScroll)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", handleScroll)
+    }
   }, [])
 
   // Prevent body scrolling when mobile menu is open
@@ -36,7 +79,13 @@ export default function Navbar() {
       document.body.style.width = "100%"
       document.body.style.overflow = "hidden"
 
+      const closeOnEscape = (event: KeyboardEvent) => {
+        if (event.key === "Escape") setIsOpen(false)
+      }
+      window.addEventListener("keydown", closeOnEscape)
+
       return () => {
+        window.removeEventListener("keydown", closeOnEscape)
         // Re-enable scrolling when component unmounts or menu closes
         document.body.style.position = ""
         document.body.style.top = ""
@@ -48,166 +97,246 @@ export default function Navbar() {
     }
   }, [isOpen])
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Work", href: "#work" },
-    { name: "Q&A with AI", href: "#qa" },
-  ]
-
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
-    const targetId = href.replace("#", "")
-    const elem = document.getElementById(targetId)
+    const travel = () => scroller.scrollTo(id, { smooth: "easeInOutCubic", duration: 900 })
 
-    if (elem) {
-      // Close the mobile menu first
+    if (isOpen) {
+      // Close the mobile menu first, and wait for the body to unlock before scrolling
       setIsOpen(false)
-
-      // Wait for the menu closing animation to complete before scrolling
-      setTimeout(() => {
-        elem.scrollIntoView({ behavior: "smooth" })
-      }, 300)
+      setTimeout(travel, 320)
+    } else {
+      travel()
     }
   }
 
-  const iconVariants = {
-    initial: { scale: 1 },
-    hover: { scale: 1.2, rotate: 5 },
-  }
-
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-[#1a2235]/80 backdrop-blur-md py-3" : "bg-transparent py-5"
-      }`}
-    >
-      <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
-        <Link href="#home" className="text-2xl font-bold text-white" onClick={(e) => scrollToSection(e, "#home")}>
-          KWON<span className="text-blue-500">.</span>
-        </Link>
+    <>
+      {/* A capsule of glass floating over the page. It slides in rather than fades: an ancestor
+          with opacity below 1 would cut the glass off from the page it is meant to show through. */}
+      <motion.header
+        layoutRoot
+        initial={{ y: "-160%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 1.1, ease: EASE, delay: 0.15 }}
+        className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-3 md:pt-4"
+      >
+        <nav
+          className={cn(
+            "glass-bar pointer-events-auto flex h-[3.25rem] w-full max-w-[46rem] items-center justify-between pl-5 pr-1.5 md:h-14 md:pl-7 md:pr-2",
+            lens && "glass-bar--lens",
+          )}
+        >
+          <span aria-hidden="true" className="glass-bar__lens" />
+          <span aria-hidden="true" className="glass-bar__frost" />
+          <span aria-hidden="true" className="glass-bar__shine" />
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8 items-center">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-              onClick={(e) => scrollToSection(e, link.href)}
+          <a
+            href="#home"
+            className="font-display text-xl font-semibold tracking-tight text-white md:text-[1.375rem]"
+            onClick={(e) => scrollToSection(e, "home")}
+          >
+            KWON
+            {/* the full stop, as a small star */}
+            <span
+              aria-hidden="true"
+              className="ml-[3px] inline-block h-[5px] w-[5px] rounded-full bg-blue-400 shadow-[0_0_10px_2px_rgba(96,165,250,0.85)] motion-safe:animate-twinkle"
+            />
+          </a>
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center md:flex">
+            {sections.map((id) => {
+              const isActive = active === id
+              return (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  aria-current={isActive ? "location" : undefined}
+                  className={cn(
+                    "relative rounded-full px-4 py-2 text-[0.95rem] transition-colors duration-500",
+                    isActive ? "text-white" : "text-slate-300/80 hover:bg-white/[0.06] hover:text-white",
+                  )}
+                  onClick={(e) => scrollToSection(e, id)}
+                >
+                  {isActive && (
+                    // One drop of glass shared by all links: it glides to whichever section is in view
+                    <motion.span
+                      layoutId="nav-marker"
+                      transition={{ type: "spring", stiffness: 360, damping: 30 }}
+                      style={{ borderRadius: 999 }}
+                      className="glass-droplet absolute inset-0"
+                    />
+                  )}
+                  <span className="relative">{t.nav[id]}</span>
+                </a>
+              )
+            })}
+            <LanguageToggle className="ml-1" />
+            <motion.a
+              href="https://github.com/cuteball017"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(iconButton, "ml-1")}
+              aria-label="GitHub"
+              variants={iconVariants}
+              initial="initial"
+              whileHover="hover"
+              transition={{ duration: 0.5, ease: EASE }}
             >
-              {link.name}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ))}
-          <motion.a
-            href="https://github.com/kwonwoosub"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-300 hover:text-white transition-colors duration-300"
-            aria-label="GitHub"
-            variants={iconVariants}
-            initial="initial"
-            whileHover="hover"
-          >
-            <Github size={24} />
-          </motion.a>
-        </div>
+              <Github size={20} />
+            </motion.a>
+          </div>
 
-        {/* Mobile Navigation Toggle */}
-        <div className="md:hidden flex items-center space-x-4">
-          <motion.a
-            href="https://github.com/kwonwoosub"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-300 hover:text-white transition-colors duration-300"
-            aria-label="GitHub"
-            variants={iconVariants}
-            initial="initial"
-            whileHover="hover"
-          >
-            <Github size={24} />
-          </motion.a>
-          <button
-            className="text-white focus:outline-none"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
+          {/* Mobile Navigation Toggle */}
+          <div className="flex items-center md:hidden">
+            <LanguageToggle className="px-2.5" />
+            <motion.a
+              href="https://github.com/cuteball017"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={iconButton}
+              aria-label="GitHub"
+              variants={iconVariants}
+              initial="initial"
+              whileHover="hover"
+              transition={{ duration: 0.5, ease: EASE }}
+            >
+              <Github size={20} />
+            </motion.a>
+            <button
+              className={cn(iconButton, "text-white focus:outline-none focus-visible:bg-white/10", isOpen && "bg-white/10")}
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? t.nav.closeMenu : t.nav.openMenu}
+              aria-expanded={isOpen}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={isOpen ? "close" : "open"}
+                  initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
+                  transition={{ duration: 0.18 }}
+                  className="block"
+                >
+                  {isOpen ? <X size={22} /> : <Menu size={22} />}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+          </div>
+        </nav>
+      </motion.header>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu — a sheet of glass that unfolds from the bar. The scrim and the
+          sheet fade on their own (not through a shared wrapper) so each keeps its view of the page. */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="menu-scrim"
+            aria-hidden="true"
+            onClick={() => setIsOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/95 md:hidden"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 9998,
-            }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className="fixed inset-0 z-40 bg-[#03040c]/60 backdrop-blur-md md:hidden"
+          />
+        )}
+        {isOpen && (
+          <motion.div
+            key="menu-sheet"
+            initial={{ opacity: 0, scale: 0.9, y: -14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: -10, transition: { duration: 0.25, ease: EASE } }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            className="glass-panel fixed inset-x-3 top-[4.5rem] z-40 origin-top-right p-2 md:hidden"
           >
-            <div className="flex justify-end p-4">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800"
-                aria-label="Close menu"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="flex flex-col items-center justify-center h-full">
-              {navLinks.map((link, index) => (
-                <motion.div
-                  key={link.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="mb-8"
-                >
-                  <Link
-                    href={link.href}
-                    className="text-gray-300 hover:text-white py-2 text-2xl font-medium transition-colors duration-300"
-                    onClick={(e) => scrollToSection(e, link.href)}
+            <motion.div variants={stagger(0.05, 0.06)} initial="hidden" animate="show" className="flex flex-col">
+              {sections.map((id) => {
+                const isActive = active === id
+                return (
+                  <motion.a
+                    key={id}
+                    variants={focusIn}
+                    href={`#${id}`}
+                    aria-current={isActive ? "location" : undefined}
+                    className={cn(
+                      "relative flex items-center justify-between rounded-2xl px-4 py-3.5 font-display text-lg transition-colors duration-300",
+                      isActive ? "text-white" : "text-slate-300 hover:text-white active:bg-white/[0.06]",
+                    )}
+                    onClick={(e) => scrollToSection(e, id)}
                   >
-                    {link.name}
-                  </Link>
-                </motion.div>
-              ))}
+                    {isActive && <span aria-hidden="true" className="glass-droplet absolute inset-0 rounded-2xl" />}
+                    <span className={cn("relative", isActive && "text-starlight")}>{t.nav[id]}</span>
+                    {isActive && (
+                      <span
+                        aria-hidden="true"
+                        className="relative h-[5px] w-[5px] rounded-full bg-blue-300 shadow-[0_0_10px_2px_rgba(96,165,250,0.85)]"
+                      />
+                    )}
+                  </motion.a>
+                )
+              })}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: navLinks.length * 0.1 }}
-                className="mt-8"
+                variants={focusIn}
+                aria-hidden="true"
+                className="mx-4 my-1.5 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+              />
+              <motion.a
+                variants={focusIn}
+                href="https://github.com/cuteball017"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-slate-300 transition-colors duration-300 hover:text-white active:bg-white/[0.06]"
               >
-                <a
-                  href="https://github.com/kwonwoosub"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  <Github size={24} />
-                  <span>GitHub</span>
-                </a>
-              </motion.div>
-            </div>
+                <Github size={20} />
+                <span>GitHub</span>
+              </motion.a>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+
+      {/* Displacement map for the bar's rim. It is assembled from flat colours and offsets, with no
+          lengths that depend on the bar, so the same filter fits every width: a strip along each
+          edge pushes the backdrop inwards (red drives x, green drives y) and a blur turns the
+          strips into a slope. */}
+      {lens && (
+        <svg aria-hidden="true" width="0" height="0" className="pointer-events-none absolute">
+          <filter id="liquid-lens" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feFlood floodColor="#808080" result="flat" />
+            <feOffset in="flat" dx="7" result="leftGap" />
+            <feOffset in="flat" dx="-7" result="rightGap" />
+            <feOffset in="flat" dy="7" result="topGap" />
+            <feOffset in="flat" dy="-7" result="bottomGap" />
+
+            <feFlood floodColor="#ff8080" result="pushRight" />
+            <feComposite in="pushRight" in2="leftGap" operator="out" result="left" />
+            <feFlood floodColor="#008080" result="pushLeft" />
+            <feComposite in="pushLeft" in2="rightGap" operator="out" result="right" />
+            <feMerge result="xSteps">
+              <feMergeNode in="flat" />
+              <feMergeNode in="left" />
+              <feMergeNode in="right" />
+            </feMerge>
+            <feGaussianBlur in="xSteps" stdDeviation="4 0" result="xMap" />
+
+            <feFlood floodColor="#80ff80" result="pushDown" />
+            <feComposite in="pushDown" in2="topGap" operator="out" result="top" />
+            <feFlood floodColor="#800080" result="pushUp" />
+            <feComposite in="pushUp" in2="bottomGap" operator="out" result="bottom" />
+            <feMerge result="ySteps">
+              <feMergeNode in="flat" />
+              <feMergeNode in="top" />
+              <feMergeNode in="bottom" />
+            </feMerge>
+            <feGaussianBlur in="ySteps" stdDeviation="0 4" result="yMap" />
+
+            <feDisplacementMap in="SourceGraphic" in2="xMap" scale="18" xChannelSelector="R" yChannelSelector="B" result="bentX" />
+            <feDisplacementMap in="bentX" in2="yMap" scale="18" xChannelSelector="B" yChannelSelector="G" />
+          </filter>
+        </svg>
+      )}
+    </>
   )
 }

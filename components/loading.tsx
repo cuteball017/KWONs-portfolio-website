@@ -1,98 +1,56 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion, useAnimation } from "framer-motion"
+import { useEffect } from "react"
+import { animate, motion, useMotionValue, useTransform } from "framer-motion"
+import { useCopy } from "@/lib/i18n"
+import { EASE } from "@/lib/motion"
 
+/**
+ * Intro overlay. The sky is already forming behind it; when the page is ready the overlay
+ * dissolves instead of being swapped out, so there is no hard cut into the hero.
+ */
 export default function Loading() {
-  const [progress, setProgress] = useState(0)
-  const controls = useAnimation()
+  const t = useCopy()
+  const progress = useMotionValue(0)
+  const width = useTransform(progress, (value) => `${value}%`)
+  const percent = useTransform(progress, (value) => `${Math.round(value)}%`)
 
   useEffect(() => {
-    const duration = 12 // Total duration in seconds
-    const interval = 50 // Update interval in milliseconds
-
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 100 / ((duration * 500) / interval)
-        if (next >= 100) {
-          clearInterval(timer)
-          return 100
-        }
-        return next
-      })
-    }, interval)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    controls.start({ width: `${progress}%` })
-  }, [progress, controls])
+    // Reaches 100% just before page.tsx lifts the overlay (2s).
+    const controls = animate(progress, 100, { duration: 1.75, ease: [0.4, 0, 0.2, 1] })
+    return () => controls.stop()
+  }, [progress])
 
   return (
-    <div className="fixed inset-0 bg-[#1a2235] z-50 flex flex-col items-center justify-center">
-      <div className="w-64 relative">
-        {/* Main loading bar container */}
-        <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden relative">
-          {/* Gradient background */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600"
-            initial={{ x: "-100%" }}
-            animate={{ x: "0%" }}
-            transition={{
-              repeat: Number.POSITIVE_INFINITY,
-              duration: 6,
-              ease: "linear",
-            }}
-          />
-
-          {/* Progress bar */}
-          <motion.div
-            className="h-full bg-gradient-to-r from-blue-500 to-blue-700"
-            initial={{ width: 0 }}
-            animate={controls}
-            transition={{ duration: 0.1 }}
-          />
-
-          {/* Glow effect */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-700/20 blur-sm"
-            initial={{ width: 0 }}
-            animate={controls}
-            transition={{ duration: 0.1 }}
-          />
+    <motion.div
+      role="status"
+      aria-label="Loading"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#03040c]/70"
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.9, ease: EASE }}
+    >
+      <motion.div
+        className="w-64"
+        exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
+        transition={{ duration: 0.6, ease: EASE }}
+      >
+        {/* Progress as a comet crossing a thin track */}
+        <div className="h-px w-full rounded-full bg-white/10">
+          <motion.div className="comet-trail" style={{ width }} />
         </div>
 
-        {/* Percentage text */}
-        <div className="mt-4 text-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
-          >
-            {Math.round(progress)}%
-          </motion.div>
-        </div>
-
-        {/* Loading text with glitch effect */}
-        <motion.div
-          className="mt-2 text-center text-gray-400 text-sm relative"
-          animate={{
-            textShadow: [
-              "0 0 0px rgba(59, 130, 246, 0)",
-              "0 0 2px rgba(59, 130, 246, 0.5)",
-              "0 0 0px rgba(59, 130, 246, 0)",
-            ],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-        >
-          Loading...
+        <motion.div className="text-starlight mt-6 text-center font-display text-2xl font-light tabular-nums">
+          {percent}
         </motion.div>
-      </div>
-    </div>
+
+        <motion.div
+          className="mt-2 text-center text-sm text-blue-100/60"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        >
+          {t.loading}
+        </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }

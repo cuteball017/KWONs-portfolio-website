@@ -1,147 +1,181 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { useMediaQuery } from "@/hooks/use-media-query"
+import { BadgeCheck, Briefcase, GraduationCap, Trophy, type LucideIcon } from "lucide-react"
+import { SectionHeading } from "@/components/section-heading"
+import type { Copy } from "@/lib/copy"
+import { useCopy } from "@/lib/i18n"
+import { EASE, focusIn, inView, riseIn, stagger } from "@/lib/motion"
 
-const skillsData = {
-  "Programming Languages": [
+type ProfileTopic = keyof Copy["about"]["profile"]
+
+// The profile beside the portrait, one row per topic in this order. The text is in lib/copy.ts
+// (about.profile); keep lib/profile.ts (what the chatbot knows) in step with it.
+const profileIcons: Record<ProfileTopic, LucideIcon> = {
+  education: GraduationCap,
+  experience: Briefcase,
+  awards: Trophy,
+  certifications: BadgeCheck,
+}
+
+const skillsData: Record<keyof Copy["about"]["skillGroups"], { name: string; proficiency: number }[]> = {
+  languages: [
     { name: "TypeScript", proficiency: 80 },
     { name: "JavaScript", proficiency: 72 },
     { name: "python", proficiency: 68 },
     { name: "Java", proficiency: 40 },
     { name: "Dart", proficiency: 20 },
   ],
-  "Frameworks/Libraries": [
+  frameworks: [
     { name: "React", proficiency: 75 },
     { name: "Next.js", proficiency: 70 },
     { name: "Node.js", proficiency: 65 },
   ],
-  Tools: [
+  tools: [
     { name: "Git", proficiency: 75 },
     { name: "Docker", proficiency: 15 },
   ],
 }
 
 export default function AboutMe() {
-  const isMobile = useMediaQuery("(max-width: 768px)")
+  const t = useCopy()
+  // If the portrait can't be loaded, show a monogram tile instead of a broken-image icon.
+  const [portraitFailed, setPortraitFailed] = useState(false)
 
   return (
-    <section id="about" className="relative z-10 py-12">
-      <div className="container px-4 mx-auto">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="relative z-10"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">About Me</span>
-            <span className="ml-2">☕💻</span>
-          </h2>
-          {/* Profile Section */}
-          <div className="flex flex-col md:flex-row-reverse items-center gap-8 mb-16">
-            <div className="md:w-1/3 w-full flex justify-center">
-              <div className="relative w-48 h-48 md:w-64 md:h-64">
-                <Image
-                  src="https://storage.cloud.google.com/pfo-img/portfolio_img.jpg"
-                  alt="KWON WOOSUB"
-                  width={256}
-                  height={256}
-                  className="rounded-lg object-cover shadow-lg"
-                />
-              </div>
-            </div>
-            <div className="md:w-2/3 w-full">
-              <div className="prose prose-invert max-w-none text-center md:text-left">
-                {/* Mobile description - improved for better readability */}
-                <div className="md:hidden px-2">
-                  <p className="text-lg mb-2">
-                    <strong>Blockchain Sorcerer 🧙‍♂️ and Full Stack Dev 💻</strong>
-                  </p>
-                  <p className="text-sm text-gray-300 mb-2">
-                    Building secure, scalable solutions in the crypto-verse. From DeFi to Web3, turning complex tech
-                    into seamless experiences.
-                  </p>
-                  <p className="text-sm text-gray-300">
-                    Passionate about decentralized technologies and creating innovative solutions. ⛓⚡🔥
-                  </p>
-                </div>
-                {/* Desktop description */}
-                <div className="hidden md:block">
-                  <p className="text-xl mb-4">
-                    🚀 <strong>Hey, I'm KWON WOOSUB!</strong>
-                  </p>
-                  <p className="mb-4">
-                    A <strong>Blockchain Wizard 🧙‍♂️</strong> and <strong>Full Stack Alchemist 💻</strong>, turning{" "}
-                    <strong>lines of code</strong> into <strong>decentralized magic</strong>! Whether it's{" "}
-                    <strong>smart contracts</strong>, <strong>ZK proofs</strong>, or <strong>FHE sorcery</strong>, I
-                    love pushing Web3 to the next level.
-                  </p>
-                  <p className="mb-4">
-                    I spend my days <strong>hacking away in Solidity, Go, and Rust</strong>—and my nights wondering why
-                    gas fees still exist. 😅 When I'm not coding, I'm probably deep-diving into{" "}
-                    <strong>DeFi rabbit holes</strong>, contributing to <strong>open-source chaos</strong>, or
-                    evangelizing blockchain to anyone who'll listen (or can't escape).
-                  </p>
-                  <p>
-                    Let's <strong>connect, build, and break things</strong>—because the{" "}
-                    <strong>future is decentralized, and I refuse to be left behind!</strong> ⛓⚡🔥
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div>
+      <SectionHeading title={t.about.heading} emoji="☕💻" />
 
-          {/* Skills Section */}
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-8 text-center">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
-                Code Arsenal
-              </span>
-              <span className="ml-2 text-white">⚔️</span>
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {Object.entries(skillsData).map(([category, skills]) => (
-                <div
-                  key={category}
-                  className="p-4 md:p-6 bg-gray-900/50 rounded-xl backdrop-blur-sm border border-gray-800"
-                >
-                  <h4 className="text-lg md:text-xl font-bold mb-4 text-blue-400 text-center md:text-left">
-                    {category}
-                  </h4>
-                  {skills.map((skill) => (
-                    <SkillBar key={skill.name} name={skill.name} proficiency={skill.proficiency} />
-                  ))}
-                </div>
-              ))}
-            </div>
+      {/* Profile Section */}
+      {/* Side by side from md up: the portrait grows with the screen (about three quarters of the
+          profile's height on wide screens) and the profile takes the rest of the row. */}
+      <div className="mb-20 flex flex-col items-center gap-10 md:mb-24 md:flex-row-reverse md:gap-12 lg:gap-16 xl:gap-20">
+        <motion.div
+          variants={riseIn}
+          initial="hidden"
+          whileInView="show"
+          viewport={inView}
+          className="flex w-full justify-center md:w-auto md:shrink-0"
+        >
+          {/* The portrait floats, with a soft blue halo behind it */}
+          <div className="relative h-48 w-48 motion-safe:animate-float md:h-60 md:w-60 lg:h-80 lg:w-80 xl:h-[23rem] xl:w-[23rem]">
+            <div aria-hidden="true" className="absolute -inset-8 rounded-full bg-blue-500/20 blur-3xl lg:-inset-12" />
+            {portraitFailed ? (
+              <div
+                role="img"
+                aria-label="KWON WOOSUB"
+                className="relative flex h-full w-full items-center justify-center rounded-[2rem] bg-gradient-to-br from-blue-400/15 to-blue-600/5 shadow-[0_30px_80px_-30px_rgba(37,99,235,0.75)] ring-1 ring-white/10 lg:rounded-[2.5rem]"
+              >
+                <span className="text-starlight font-display text-5xl font-semibold tracking-tight md:text-6xl lg:text-7xl xl:text-8xl">
+                  KW
+                </span>
+              </div>
+            ) : (
+              <Image
+                src="https://storage.cloud.google.com/pfo-img/portfolio_img.jpg"
+                alt="KWON WOOSUB"
+                width={368}
+                height={368}
+                onError={() => setPortraitFailed(true)}
+                className="relative h-full w-full rounded-[2rem] object-cover shadow-[0_30px_80px_-30px_rgba(37,99,235,0.75)] ring-1 ring-white/10 lg:rounded-[2.5rem]"
+              />
+            )}
           </div>
         </motion.div>
+
+        {/* Profile: name and title, then one row per topic like a résumé */}
+        <motion.div
+          variants={stagger(0.1)}
+          initial="hidden"
+          whileInView="show"
+          viewport={inView}
+          className="w-full min-w-0 text-center md:flex-1 md:text-left"
+        >
+          <motion.div variants={focusIn}>
+            <h3 className="font-display text-3xl font-semibold tracking-tight text-white md:text-4xl">KWON WOOSUB</h3>
+            <p className="mt-2 text-sm font-medium uppercase tracking-[0.22em] text-blue-200/75 md:text-base [&:lang(ja)]:tracking-[0.1em]">
+              {t.about.title}
+            </p>
+          </motion.div>
+
+          <dl className="mt-8 md:mt-10">
+            {(Object.keys(profileIcons) as ProfileTopic[]).map((topic) => {
+              const Icon = profileIcons[topic]
+              const { label, items } = t.about.profile[topic]
+              return (
+                <motion.div
+                  key={topic}
+                  variants={focusIn}
+                  className="grid gap-3 border-t border-blue-200/[0.09] py-5 md:grid-cols-[11rem_1fr] md:gap-6"
+                >
+                  <dt className="flex items-center justify-center gap-2.5 text-xs font-medium uppercase tracking-[0.2em] text-blue-200/60 md:justify-start md:pt-1 [&:lang(ja)]:text-[0.8rem] [&:lang(ja)]:tracking-[0.08em]">
+                    <Icon aria-hidden="true" className="h-4 w-4 text-blue-300/70" />
+                    {label}
+                  </dt>
+                  <dd className="space-y-3">
+                    {items.map((item) => (
+                      <div key={item.title}>
+                        <p className="font-medium text-white">{item.title}</p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-slate-400">{item.detail}</p>
+                      </div>
+                    ))}
+                  </dd>
+                </motion.div>
+              )
+            })}
+          </dl>
+        </motion.div>
       </div>
-    </section>
+
+      {/* Skills Section */}
+      <div>
+        <SectionHeading as="h3" title={t.about.skillsHeading} emoji="⚔️" />
+        <motion.div
+          variants={stagger(0.12)}
+          initial="hidden"
+          whileInView="show"
+          viewport={inView}
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
+        >
+          {(Object.keys(skillsData) as (keyof typeof skillsData)[]).map((group) => (
+            <motion.div key={group} variants={riseIn} className="glass-panel p-5 md:p-7">
+              <h4 className="mb-5 text-center font-display text-lg font-medium text-blue-200 md:text-left md:text-xl">
+                {t.about.skillGroups[group]}
+              </h4>
+              {skillsData[group].map((skill, index) => (
+                <SkillBar key={skill.name} name={skill.name} proficiency={skill.proficiency} delay={0.3 + index * 0.09} />
+              ))}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
   )
 }
 
 type SkillBarProps = {
-  name: string;
-  proficiency: number;
-};
+  name: string
+  proficiency: number
+  delay?: number
+}
 
-function SkillBar({ name, proficiency }: SkillBarProps) {
+function SkillBar({ name, proficiency, delay = 0 }: SkillBarProps) {
   return (
-    <div className="mb-3">
-      <div className="flex justify-between mb-1">
-        <span className="text-gray-300 text-sm md:text-base">{name}</span>
-        <span className="text-gray-400 text-sm md:text-base">{proficiency}%</span>
+    <div className="mb-4 last:mb-0">
+      <div className="mb-2 flex justify-between">
+        <span className="text-sm text-slate-200 md:text-base">{name}</span>
+        <span className="text-sm tabular-nums text-slate-400 md:text-base">{proficiency}%</span>
       </div>
-      <div className="h-1.5 md:h-2 bg-gray-700 rounded-full overflow-hidden">
+      {/* Each bar is drawn as a small comet: a fading trail with a bright head */}
+      <div className="h-[3px] rounded-full bg-white/[0.07]">
         <motion.div
-          initial={{ width: 0 }}
-          whileInView={{ width: `${proficiency}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
+          initial={{ width: 0, opacity: 0 }}
+          whileInView={{ width: `${proficiency}%`, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.5, ease: EASE, delay }}
+          className="comet-trail"
         />
       </div>
     </div>

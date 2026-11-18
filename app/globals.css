@@ -4,14 +4,15 @@
 
 @layer base {
   :root {
-    --background: 222 30% 10%;
-    --foreground: 0 0% 98%;
+    /* Deep space instead of pure black; blue stays the single accent. */
+    --background: 230 62% 3%;
+    --foreground: 214 45% 96%;
 
-    --card: 222 30% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 226 48% 7%;
+    --card-foreground: 214 45% 96%;
 
-    --popover: 222 30% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 226 48% 7%;
+    --popover-foreground: 214 45% 96%;
 
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
@@ -31,6 +32,9 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 224.3 76.3% 48%;
+
+    /* rounded-sm / md / lg all derive from this. */
+    --radius: 0.875rem;
   }
 }
 
@@ -39,86 +43,529 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  /* Japanese: wrap lines between phrases instead of between any two characters (Chromium). */
+  html:lang(ja) {
+    word-break: auto-phrase;
+  }
+  ::selection {
+    background: rgba(96, 165, 250, 0.32);
+    color: #fff;
   }
 }
 
-/* Custom scrollbar styles */
+/* Scrollbar: a faint blue thread rather than a solid bar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: #03040c;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #3b82f6, #2563eb);
-  border-radius: 4px;
+  background: rgba(96, 165, 250, 0.28);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+  background: rgba(96, 165, 250, 0.5);
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3b82f6 #111;
+  scrollbar-color: rgba(96, 165, 250, 0.35) #03040c;
 }
 
-@keyframes glitch {
-  0% {
-    clip-path: inset(50% 0 30% 0);
-    transform: translate(-5px, 0);
-  }
-  20% {
-    clip-path: inset(15% 0 65% 0);
-    transform: translate(5px, 0);
-  }
-  40% {
-    clip-path: inset(45% 0 40% 0);
-    transform: translate(-5px, 0);
-  }
-  60% {
-    clip-path: inset(25% 0 60% 0);
-    transform: translate(5px, 0);
-  }
-  80% {
-    clip-path: inset(55% 0 30% 0);
-    transform: translate(-5px, 0);
-  }
-  100% {
-    clip-path: inset(50% 0 30% 0);
-    transform: translate(0);
-  }
+/* Registered so the light on glass surfaces can fade in and out instead of switching. */
+@property --glass-glow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
 
-.glitch {
-  animation: glitch 1s infinite;
-  position: relative;
-}
-
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute absolute;
+/* ------------------------------------------------------------------ cosmos --
+   Fixed backdrop driven by lib/cosmos.ts. 100lvh keeps its size stable on phones,
+   so the sky doesn't jump when the browser's address bar slides away. */
+.cosmos {
+  position: fixed;
   top: 0;
   left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 66% 14%, #0a1532 0%, #060b1e 36%, #03050f 66%, #02030a 100%);
+}
+
+.cosmos-sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 2.6s ease;
+  will-change: transform;
+}
+
+.cosmos-sky[data-ready="true"] {
+  opacity: 1;
+}
+
+.cosmos-stars {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
 
-.glitch::before {
-  left: 2px;
-  text-shadow: -2px 0 #3b82f6;
-  clip: rect(24px, 550px, 90px, 0);
-  animation: glitch-anim 2s infinite linear alternate-reverse;
+.cosmos-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 85% 75% at 50% 45%, transparent 45%, rgba(2, 3, 10, 0.6) 100%);
 }
 
-.glitch::after {
-  left: -2px;
-  text-shadow: -2px 0 #2563eb;
-  clip: rect(85px, 550px, 140px, 0);
-  animation: glitch-anim 2s infinite linear alternate-reverse;
+/* Dims the sky behind everything below the hero, fading in so no section edge shows. */
+.content-veil {
+  background: linear-gradient(to bottom, rgba(3, 4, 12, 0) 0, rgba(3, 4, 12, 0.56) 18rem);
+}
+
+@layer components {
+  /* The blue gradient text, now lit from a near-white core like starlight. */
+  .text-starlight {
+    background-image: linear-gradient(100deg, #f4f8ff 0%, #c7ddff 26%, #7fb2fb 58%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ---------------------------------------------------------- liquid glass --
+     One material in three weights:
+       .glass-panel    cards and panels — frosted, with a quiet rim
+       .glass-control  buttons and round controls — clearer, brighter rim, springs under the pointer
+       .glass-bar      the floating navigation — adds real refraction along its rim (see navbar.tsx)
+     All three share a rim that catches the light at two opposite corners (::before, a 1px gradient
+     ring) and a soft light that follows the pointer (::after). hooks/use-glass-light.ts feeds
+     --glass-x / --glass-y; without it the light simply falls in from the top edge. */
+  .glass-panel,
+  .glass-control,
+  .glass-bar {
+    --glass-x: 50%;
+    --glass-y: 0%;
+    --glass-glow: 0;
+    --glass-reach: 20rem;
+    --glass-rim: 0.34;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .glass-panel::before,
+  .glass-control::before,
+  .glass-bar__shine::before,
+  .glass-panel::after,
+  .glass-control::after,
+  .glass-bar__shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* The rim: bright where the light enters and leaves, nearly invisible in between. Two mask
+     layers cut the gradient down to a 1px ring — where a browser can't do that, there is no rim
+     rather than a gradient across the whole surface. */
+  @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+    .glass-panel::before,
+    .glass-control::before,
+    .glass-bar__shine::before {
+      padding: 1px;
+      background:
+        radial-gradient(
+          var(--glass-reach) circle at var(--glass-x) var(--glass-y),
+          rgb(228 239 255 / calc(0.85 * var(--glass-glow))),
+          transparent
+        ),
+        linear-gradient(
+          148deg,
+          rgb(255 255 255 / var(--glass-rim)) 0%,
+          rgb(255 255 255 / calc(var(--glass-rim) * 0.32)) 18%,
+          rgb(255 255 255 / calc(var(--glass-rim) * 0.14)) 46%,
+          rgb(176 206 255 / calc(var(--glass-rim) * 0.3)) 76%,
+          rgb(196 220 255 / calc(var(--glass-rim) * 0.8)) 100%
+        );
+      -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+      -webkit-mask-clip: content-box, border-box;
+      -webkit-mask-composite: xor;
+      mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+      mask-clip: content-box, border-box;
+      mask-composite: exclude;
+    }
+  }
+
+  /* The light under the pointer. */
+  .glass-panel::after,
+  .glass-control::after,
+  .glass-bar__shine::after {
+    background: radial-gradient(
+      var(--glass-reach) circle at var(--glass-x) var(--glass-y),
+      rgb(190 214 255 / 0.13),
+      rgb(190 214 255 / 0.04) 45%,
+      transparent
+    );
+    opacity: var(--glass-glow);
+  }
+
+  @media (hover: hover) {
+    .glass-panel:hover,
+    .glass-control:hover,
+    .glass-bar:hover {
+      --glass-glow: 1;
+    }
+  }
+
+  .glass-panel {
+    border-radius: 1.5rem;
+    background:
+      linear-gradient(
+        162deg,
+        rgb(214 228 255 / 0.09) 0%,
+        rgb(214 228 255 / 0.022) 30%,
+        rgb(214 228 255 / 0) 56%,
+        rgb(214 228 255 / 0.03) 100%
+      ),
+      linear-gradient(180deg, rgb(104 134 232 / 0.075) 0%, rgb(9 13 33 / 0.36) 100%);
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / 0.13),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.035),
+      inset 0 20px 30px -24px rgb(200 220 255 / 0.2),
+      inset 0 -24px 32px -26px rgb(1 3 12 / 0.6),
+      0 30px 64px -38px rgb(0 0 0 / 0.9);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    backdrop-filter: blur(14px) saturate(170%);
+    transition:
+      box-shadow 0.6s ease,
+      --glass-glow 0.7s ease;
+  }
+
+  .glass-control {
+    --glass-reach: 7rem;
+    --glass-rim: 0.6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    color: #edf3ff;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(255 255 255 / 0.14) 0%,
+        rgb(255 255 255 / 0.04) 46%,
+        rgb(255 255 255 / 0.07) 100%
+      ),
+      rgb(16 26 62 / 0.3);
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / 0.32),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.08),
+      inset 0 0 12px -3px rgb(190 214 255 / 0.2),
+      0 14px 34px -18px rgb(0 0 0 / 0.85),
+      0 2px 6px -3px rgb(0 0 0 / 0.5);
+    -webkit-backdrop-filter: blur(10px) saturate(180%) brightness(1.08);
+    backdrop-filter: blur(10px) saturate(180%) brightness(1.08);
+    /* The scale overshoots a little and settles, like something soft being pressed. */
+    transition:
+      scale 0.55s cubic-bezier(0.3, 1.36, 0.5, 1),
+      box-shadow 0.5s ease,
+      color 0.3s ease,
+      --glass-glow 0.5s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Blue-tinted glass for the primary action. */
+  .glass-control--tint {
+    --glass-rim: 0.75;
+    color: #fff;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0) 52%, rgb(255 255 255 / 0.06) 100%),
+      linear-gradient(180deg, rgb(74 144 255 / 0.78), rgb(37 99 235 / 0.66));
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / 0.5),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.14),
+      inset 0 0 14px -3px rgb(205 226 255 / 0.4),
+      0 16px 40px -14px rgb(59 130 246 / 0.75),
+      0 2px 6px -3px rgb(0 0 0 / 0.5);
+  }
+
+  .glass-control:focus-visible {
+    outline: 2px solid rgb(147 197 253 / 0.85);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .glass-control:hover {
+      scale: 1.04;
+      color: #fff;
+      box-shadow:
+        inset 0 1px 0.5px rgb(255 255 255 / 0.42),
+        inset 0 -1px 0.5px rgb(255 255 255 / 0.1),
+        inset 0 0 16px -3px rgb(190 214 255 / 0.32),
+        0 18px 40px -18px rgb(59 130 246 / 0.6),
+        0 2px 6px -3px rgb(0 0 0 / 0.5);
+    }
+
+    .glass-control--tint:hover {
+      box-shadow:
+        inset 0 1px 0.5px rgb(255 255 255 / 0.6),
+        inset 0 -1px 0.5px rgb(255 255 255 / 0.16),
+        inset 0 0 18px -3px rgb(214 232 255 / 0.55),
+        0 20px 48px -14px rgb(59 130 246 / 0.95),
+        0 2px 6px -3px rgb(0 0 0 / 0.5);
+    }
+  }
+
+  /* Pressed: the glass gives way and lights up from inside. */
+  .glass-control:active {
+    --glass-glow: 1.6;
+    scale: 0.97;
+    transition-duration: 0.18s, 0.3s, 0.3s, 0.2s;
+  }
+
+  /* With reduced motion the controls keep their light but hold still. */
+  @media (prefers-reduced-motion: reduce) {
+    .glass-control:hover,
+    .glass-control:active {
+      scale: none;
+    }
+  }
+
+  /* Unavailable: the glass stays in place, drained of colour and no longer answering the pointer. */
+  .glass-control:disabled {
+    pointer-events: none;
+    opacity: 0.4;
+    filter: saturate(0.25);
+  }
+
+  .glass-bar {
+    --glass-reach: 11rem;
+    --glass-rim: 0.55;
+    border-radius: 9999px;
+    box-shadow:
+      0 22px 50px -26px rgb(0 0 0 / 0.9),
+      0 3px 10px -6px rgb(0 0 0 / 0.6);
+    transition: --glass-glow 0.6s ease;
+  }
+
+  /* The bar itself must stay free of filters: its three layers each look through to the page. */
+  .glass-bar__lens,
+  .glass-bar__frost,
+  .glass-bar__shine {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .glass-bar__lens {
+    display: none;
+  }
+
+  .glass-bar__frost {
+    background: linear-gradient(180deg, rgb(168 186 236 / 0.1) 0%, rgb(9 13 32 / 0.44) 100%);
+    -webkit-backdrop-filter: blur(16px) saturate(165%);
+    backdrop-filter: blur(16px) saturate(165%);
+  }
+
+  .glass-bar__shine {
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / 0.34),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.09),
+      inset 0 0 14px -4px rgb(196 218 255 / 0.22);
+  }
+
+  /* Where the browser can bend a backdrop (navbar.tsx switches this on), the rim becomes a lens:
+     whatever passes underneath is refracted there, and the frost pulls back to the core. */
+  .glass-bar--lens .glass-bar__lens {
+    display: block;
+    -webkit-backdrop-filter: url(#liquid-lens) blur(0.6px) saturate(135%) brightness(1.05);
+    backdrop-filter: url(#liquid-lens) blur(0.6px) saturate(135%) brightness(1.05);
+  }
+
+  .glass-bar--lens .glass-bar__frost {
+    /* The frost now looks through the lens, which has already deepened the colours once. */
+    -webkit-backdrop-filter: blur(16px) saturate(122%);
+    backdrop-filter: blur(16px) saturate(122%);
+    /* A feathered capsule, nine-sliced so it follows the bar at any width. */
+    -webkit-mask-box-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cdefs%3E%3Cfilter id='f' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='14' y='14' width='72' height='72' rx='34' filter='url(%23f)'/%3E%3C/svg%3E");
+    -webkit-mask-box-image-slice: 48 fill;
+    -webkit-mask-box-image-width: 28px;
+    -webkit-mask-box-image-repeat: stretch;
+  }
+
+  /* The capsule that glides to the current section inside the bar — a drop of clearer glass. */
+  .glass-droplet {
+    background: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.2) 0%,
+      rgb(255 255 255 / 0.06) 52%,
+      rgb(255 255 255 / 0.11) 100%
+    );
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / 0.5),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.12),
+      inset 0 0 10px -3px rgb(190 214 255 / 0.4),
+      0 6px 16px -8px rgb(0 0 0 / 0.75),
+      0 0 22px -8px rgb(96 165 250 / 0.75);
+  }
+
+  /* A recess pressed into a glass panel (the chat log, text fields). */
+  .glass-well {
+    background: rgb(3 6 20 / 0.5);
+    box-shadow:
+      inset 0 2px 10px rgb(0 0 0 / 0.5),
+      inset 0 0 0 1px rgb(255 255 255 / 0.045),
+      0 1px 0 rgb(255 255 255 / 0.05);
+  }
+
+  /* People who ask for less transparency get solid surfaces with the same shapes. */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-panel,
+    .glass-control,
+    .glass-bar__frost {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    .glass-panel,
+    .glass-bar__frost {
+      background: #0a1024;
+    }
+
+    .glass-control {
+      background: #17234a;
+    }
+
+    .glass-control--tint {
+      background: #2563eb;
+    }
+
+    .glass-bar--lens .glass-bar__lens {
+      display: none;
+    }
+
+    .glass-bar--lens .glass-bar__frost {
+      -webkit-mask-box-image-source: none;
+    }
+  }
+
+  /* A line of light with a bright head — skill bars and the loader share it with the meteors. */
+  .comet-trail {
+    position: relative;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.18) 0%, #3b82f6 55%, #bfdbfe 100%);
+  }
+
+  .comet-trail::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: #fff;
+    transform: translate(50%, -50%);
+    box-shadow:
+      0 0 10px 3px rgba(147, 197, 253, 0.85),
+      0 0 22px 8px rgba(59, 130, 246, 0.35);
+  }
+
+  /* Project cards. Touch screens get the links as a plain row under the text … */
+  .project-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+
+  /* … while pointers keep the hover reveal: the text falls out of focus as the links come forward. */
+  @media (hover: hover) {
+    .project-card:hover,
+    .project-card:focus-within {
+      --glass-glow: 1;
+      box-shadow:
+        inset 0 1px 0.5px rgb(255 255 255 / 0.2),
+        inset 0 -1px 0.5px rgb(255 255 255 / 0.05),
+        inset 0 20px 30px -24px rgb(200 220 255 / 0.28),
+        inset 0 -24px 32px -26px rgb(1 3 12 / 0.6),
+        0 34px 74px -36px rgb(37 99 235 / 0.72);
+    }
+
+    .project-card__body {
+      transition:
+        filter 0.5s ease,
+        opacity 0.5s ease;
+    }
+
+    .project-card:hover .project-card__body,
+    .project-card:focus-within .project-card__body {
+      filter: blur(4px);
+      opacity: 0.3;
+    }
+
+    .project-card__actions {
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    /* The buttons are glass controls; "translate" leaves their own scale and light transitions alone. */
+    .project-card__actions > * {
+      translate: 0 8px;
+      transition:
+        scale 0.55s cubic-bezier(0.3, 1.36, 0.5, 1),
+        box-shadow 0.5s ease,
+        color 0.3s ease,
+        --glass-glow 0.5s ease,
+        translate 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .project-card__actions > *:nth-child(2) {
+      transition-delay: 0s, 0s, 0s, 0s, 70ms;
+    }
+
+    .project-card:hover .project-card__actions,
+    .project-card:focus-within .project-card__actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .project-card:hover .project-card__actions > *,
+    .project-card:focus-within .project-card__actions > * {
+      translate: none;
+    }
+  }
 }
