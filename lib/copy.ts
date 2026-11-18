@@ -73,7 +73,7 @@ const en = {
       atta: {
         title: "Atta",
         description:
-          "Lost-and-found management app for facilities. Snap a photo and AI fills in the item details, find items by chatting with AI, and handle returns with digital signatures and auto-filled PDF reports.",
+          "Lost-and-found management app for facilities. Snap a photo and AI fills in the item details, find items by chatting with AI, and handle returns with digital signatures and automatically filled PDF reports.",
         tags: ["Next.js", "Supabase", "Gemini AI", "PWA"],
       },
       copiru: {
@@ -84,8 +84,9 @@ const en = {
       },
       blog: {
         title: "KWON's Portfolio Web Blog",
-        description: "Decentralized blogging platform with permanent storage on Arweave and crypto micropayments.",
-        tags: ["Next.js", "Firebase", "Arweave", "Web3"],
+        description:
+          "This website. A starfield drawn on canvas, a liquid glass UI, an English/Japanese toggle and an AI chat that answers questions about me.",
+        tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Claude API"],
       },
       ginger: {
         title: "HWON's Ginger Sales Site",
@@ -181,8 +182,10 @@ const ja: Copy = {
       },
       blog: {
         title: "KWON's Portfolio Web Blog",
-        description: "Arweaveによる永続的なデータ保存と、暗号資産のマイクロペイメントに対応した分散型ブログプラットフォーム。",
-        tags: ["Next.js", "Firebase", "Arweave", "Web3"],
+        description:
+          // U+2060 (word joiner) keeps 私について on one line.
+          "このサイトです。Canvasで描いた星空、リキッドグラス風のUI、英語・日本語の切り替え、私に⁠ついて答えるAIチャットを備えています。",
+        tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Claude API"],
       },
       ginger: {
         title: "HWON's Ginger Sales Site",

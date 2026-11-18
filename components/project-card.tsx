@@ -27,10 +27,12 @@ export function ProjectCard({ title, description, tags, githubUrl, vercelUrl }: 
       whileHover={{ y: -4, transition: { duration: 0.5, ease: EASE } }}
       className="project-card glass-panel h-full p-6"
     >
-      <div className="project-card__body">
-        <h3 className="font-display text-xl font-semibold text-white">{title}</h3>
-        <p className="mt-2 leading-relaxed text-slate-400">{description}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
+      {/* The body fills the card and the tags sit at its foot, so cards side by side line their
+          tags up whatever the length of their descriptions. */}
+      <div className="project-card__body flex flex-1 flex-col">
+        <h3 className="text-balance font-display text-xl font-semibold text-white">{title}</h3>
+        <p className="mt-2 text-pretty leading-relaxed text-slate-400">{description}</p>
+        <div className="mt-auto flex flex-wrap gap-2 pt-4">
           {tags.map((tag) => (
             <span
               key={tag}

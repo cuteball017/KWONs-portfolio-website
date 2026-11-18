@@ -22,7 +22,7 @@ const GITHUB_URL = "https://github.com/cuteball017"
 
 // The work cards, in order. Titles, descriptions and tags are in lib/copy.ts (work.projects).
 const projects: { id: keyof Copy["work"]["projects"]; githubUrl?: string; vercelUrl?: string }[] = [
-  { id: "atta", githubUrl: GITHUB_URL, vercelUrl: "https://project-atta.vercel.app/" },
+  { id: "atta", vercelUrl: "https://okaery.co.jp/atta#problem-1" },
   { id: "copiru", vercelUrl: "https://copiru.com/ja" },
   { id: "blog", githubUrl: GITHUB_URL, vercelUrl: "https://kwons-portfolio-website.vercel.app/" },
   { id: "ginger", githubUrl: GITHUB_URL, vercelUrl: "https://hwon-website.vercel.app/" },
@@ -125,7 +125,8 @@ export default function Home() {
                     initial="hidden"
                     whileInView="show"
                     viewport={inView}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+                    // Two columns at most: four projects make a balanced 2×2, with no card left alone
+                    className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
                   >
                     {projects.map(({ id, ...links }) => (
                       <ProjectCard key={id} {...t.work.projects[id]} {...links} />
